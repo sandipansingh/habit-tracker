@@ -1,9 +1,43 @@
-export interface Habits_data {
-    id: number;
-    name: string;
-    desc: string;
+export interface Habit {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
 }
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  createdAt?: string;
+}
+
+export interface AuthSession {
+  token: string;
+  user: AuthUser;
+}
+
+export interface AuthPayload extends AuthSession {}
+
+export interface ApiErrorDetail {
+  field?: string;
+  message: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface AuthFormRequest {
+  email: string;
+  password: string;
+}
+
+export interface HabitFormRequest {
+  name: string;
+  description: string;
+}
 
 export type PlanNode = {
   id: string;

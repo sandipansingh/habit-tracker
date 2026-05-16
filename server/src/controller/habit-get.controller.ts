@@ -1,29 +1,25 @@
 import type { Response, Request } from "express";
 import { get_data } from "../services/habit-get.services";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
+import { AppError } from "../utils/app-error.js";
 
-export async function Get_Req(req: Request, res: Response): Promise<void> {
+export async function Get_Req(
+  req: AuthRequest,
+  res: Response,
+  next: (error?: unknown) => void,
+): Promise<void> {
   try {
-    const habits = await get_data();
-
-    if (!habits || habits.length === 0) {
-      res.status(404).json({
-        success: false,
-        message: "No habits found",
-      });
-      return;
+    if (!req.userId) {
+      throw new AppError("Authentication required", 401);
     }
+
+    const habits = await get_data(req.userId);
 
     res.status(200).json({
       success: true,
-      count: habits.length,
       data: habits,
     });
   } catch (error) {
-    console.error("Error fetching habits:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 }

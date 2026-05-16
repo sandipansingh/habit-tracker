@@ -1,54 +1,23 @@
+import { useAuth } from "@/auth/auth-context";
 import { useEffect, useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Footer } from "./Footer";
 import Hero from "./Hero";
-import Footer from "./Footer";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 function Layout() {
   const location = useLocation();
-
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
   const showHero = location.pathname === "/";
-
-  // 🔐 Auth state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    window.location.href = "/login";
-  };
-
-  // 🎭 Emoji
-  const emojis = ["😎", "🤪", "👾", "🚀", "💥", "😈", "🌀", "🎯", "🔥", "🐸", "🍕", "⚡"];
   const [emoji, setEmoji] = useState("😎");
-
-  const changeEmoji = () => {
-    const random = emojis[Math.floor(Math.random() * emojis.length)];
-    setEmoji(random);
-  };
-
-  // 🌙 Dark mode
   const [darkMode, setDarkMode] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
+
+  const emojis = ["😎", "🤪", "👾", "🚀", "💥", "😈", "🌀", "🎯", "🔥", "🐸", "🍕", "⚡"];
 
   useEffect(() => {
-   if(darkMode){
-    document.documentElement.classList.add("dark");
-   }else
-   {
-    document.documentElement.classList.remove("dark");
-   }
-  },[darkMode]);
-
-  // 📍 Active link
-  const isActive = (path: string) =>
-    location.pathname === path ? "underline" : "";
-
-  // 📉 Footer show on scroll
-  const [showFooter, setShowFooter] = useState(false);
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,23 +32,31 @@ function Layout() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const changeEmoji = () => {
+    const random = emojis[Math.floor(Math.random() * emojis.length)];
+    setEmoji(random);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
+  const isActive = (path: string) => (location.pathname === path ? "underline" : "");
+
   return (
     <>
-      {/* 🔝 NAVBAR */}
       <nav
-        className={`w-full border-b-4 border-black shadow-[0px_8px_0px_rgba(0,0,0,1)]
-        ${darkMode ? "bg-black text-white" : "bg-cyan-400 text-black"}`}
+        className={`w-full border-b-4 border-black shadow-[0px_8px_0px_rgba(0,0,0,1)] ${
+          darkMode ? "bg-black text-white" : "bg-cyan-400 text-black"
+        }`}
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 max-w-7xl mx-auto">
-
-          {/* Logo */}
-          <h1 className="text-3xl font-black uppercase tracking-tighter rotate-2 hover:rotate-0 transition">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 p-5 sm:flex-row">
+          <h1 className="text-3xl font-black uppercase tracking-tighter transition hover:rotate-0">
             <Link to="/">✏️ HabitTracker</Link>
           </h1>
 
-          {/* Nav Links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-lg font-bold uppercase">
-
             <Link to="/home" className={isActive("/home")}>
               Home
             </Link>
@@ -88,27 +65,25 @@ function Layout() {
               Habits
             </Link>
 
-            {/* Emoji Button */}
             <button
               onClick={changeEmoji}
-              className="w-10 h-10 flex items-center justify-center border-2 border-black rounded-full
-              hover:scale-125 active:scale-90"
+              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black hover:scale-125 active:scale-90"
+              aria-label="Change page emoji"
             >
               {emoji}
             </button>
 
-            {/* 🔐 Auth Buttons */}
-            <div className="flex gap-3 items-center">
-              {!isLoggedIn ? (
+            <div className="flex items-center gap-3">
+              {!isAuthenticated ? (
                 <>
                   <Link to="/login">
-                    <button className="px-4 py-2 bg-black text-white rounded hover:opacity-80">
+                    <button className="rounded bg-black px-4 py-2 text-white hover:opacity-80">
                       Login
                     </button>
                   </Link>
 
                   <Link to="/register">
-                    <button className="px-4 py-2 border-2 border-black rounded hover:bg-black hover:text-white">
+                    <button className="rounded border-2 border-black px-4 py-2 hover:bg-black hover:text-white">
                       Register
                     </button>
                   </Link>
@@ -116,48 +91,45 @@ function Layout() {
               ) : (
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:opacity-80"
+                  className="rounded bg-red-500 px-4 py-2 text-white hover:opacity-80"
                 >
                   Logout
                 </button>
               )}
             </div>
 
-            {/* 🌙 Dark Mode Toggle */}
-            <div
-              onClick={() => setDarkMode(!darkMode)}
+            <button
+              onClick={() => setDarkMode((current) => !current)}
               className="flex items-center cursor-pointer select-none"
+              aria-pressed={darkMode}
             >
-              <span className="mr-2 text-sm font-black">
-                {darkMode ? "DARK" : "LIGHT"}
-              </span>
+              <span className="mr-2 text-sm font-black">{darkMode ? "DARK" : "LIGHT"}</span>
 
-              <div
-                className={`w-[60px] h-[28px] border-2 border-black shadow-[3px_3px_0px_black] relative
-                ${darkMode ? "bg-green-400" : "bg-red-400"}`}
+              <span
+                className={`relative h-[28px] w-[60px] border-2 border-black shadow-[3px_3px_0px_black] ${
+                  darkMode ? "bg-green-400" : "bg-red-400"
+                }`}
               >
-                <div
-                  className={`w-[24px] h-[24px] bg-white border-2 border-black absolute top-0 transition-all duration-150
-                  ${darkMode ? "left-[32px]" : "left-0"}`}
+                <span
+                  className={`absolute top-0 h-[24px] w-[24px] border-2 border-black bg-white transition-all duration-150 ${
+                    darkMode ? "left-[32px]" : "left-0"
+                  }`}
                 />
-              </div>
-            </div>
+              </span>
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* 📄 PAGE CONTENT */}
-      <div
-        className="min-h-screen bg-background text-foreground"
-      >
+      <div className="min-h-screen bg-background text-foreground">
         <Outlet />
-        {showHero && <Hero />}
+        {showHero ? <Hero /> : null}
       </div>
 
-      {/* 📉 FOOTER */}
       <div
-        className={`transition-all duration-500 transform
-        ${showFooter ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"}`}
+        className={`transform transition-all duration-500 ${
+          showFooter ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-10 opacity-0"
+        }`}
       >
         <Footer />
       </div>

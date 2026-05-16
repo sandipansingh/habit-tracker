@@ -1,37 +1,26 @@
 import type { Response, Request } from "express";
 import { deleting_habitById } from "../services/habit-del.service";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
+import { AppError } from "../utils/app-error.js";
 
 export async function delete_habits(
-  req: Request,
+  req: AuthRequest,
   res: Response,
+  next: (error?: unknown) => void,
 ): Promise<void> {
   try {
+    if (!req.userId) {
+      throw new AppError("Authentication required", 401);
+    }
+
     const id = Number(req.params.id);
-
-    if (!id || isNaN(id)) {
-      res.status(400).json({
-        message: "Invalid habit ID",
-      });
-      return;
-    }
-
-    const del_habits = await deleting_habitById(id);
-
-    if (!del_habits) {
-      res.status(404).json({
-        message: "Habit not found",
-      });
-      return;
-    }
+    await deleting_habitById(req.userId, id);
 
     res.status(200).json({
-      message: "Deleted successfully",
+      success: true,
+      message: "Habit deleted successfully",
     });
   } catch (error) {
-    console.error("Delete habit error:", error);
-
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 }

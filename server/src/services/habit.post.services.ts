@@ -1,36 +1,36 @@
 import { db } from "../db";
 import { Habits } from "../db/schema";
-import { eq } from "drizzle-orm";
-import { insert_data } from "../types/types";
+import { and, eq } from "drizzle-orm";
+import type { HabitInput } from "../validation/zod_validation.js";
+import { AppError } from "../utils/app-error.js";
 
-export const habits_insert_db = async (in_data: insert_data) => {
-  if (!in_data.name || in_data.name.trim().length < 3) {
-    throw new Error("Habit name must be at least 3 characters");
-  }
-
-  if (!in_data.description || in_data.description.trim().length < 5) {
-    throw new Error("Description must be at least 5 characters");
-  }
-
+export const habits_insert_db = async (userId: string, inData: HabitInput) => {
   const existing = await db
     .select({ id: Habits.id })
     .from(Habits)
-    .where(eq(Habits.name, in_data.name));
+    .where(and(eq(Habits.userId, userId), eq(Habits.name, inData.name)));
 
   if (existing.length > 0) {
-    throw new Error("Habit with this name already exists");
+    throw new AppError("Habit with this name already exists", 409);
   }
 
-  const result = await db.insert(Habits).values(in_data).returning({
-    id: Habits.id,
-    name: Habits.name,
-  });
+  const [result] = await db
+    .insert(Habits)
+    .values({
+      userId,
+      name: inData.name,
+      description: inData.description,
+    })
+    .returning({
+      id: Habits.id,
+      name: Habits.name,
+      description: Habits.description,
+      createdAt: Habits.createdAt,
+    });
 
-  if (result.length === 0) {
-    throw new Error("Failed to create habit");
+  if (!result) {
+    throw new AppError("Failed to create habit", 500);
   }
-
-  console.log("after insert db returning data : ", result);
 
   return result;
 };

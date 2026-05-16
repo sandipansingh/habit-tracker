@@ -1,103 +1,78 @@
+# Habit Tracker
 
+Full-stack habit tracker with a React + Vite frontend and an Express + Drizzle backend.
 
-<h3 align="center">⚡ Backend  Framewowrks</h3>
-# ⚙️ Tech Stack
+## Project Structure
 
-## 🧩 Runtime & Language
-- Bun (runtime)
-- TypeScript
+- `client`: React 19, TypeScript, Vite, Tailwind UI
+- `server`: Express 5, TypeScript, Drizzle ORM, PostgreSQL
 
-## 🌐 Backend Framework
-- Express.js
+## Prerequisites
 
-## 🗄️ Database + ORM
+- Node.js for the frontend toolchain
+- Bun for the backend scripts in `server/package.json`
 - PostgreSQL
-- Drizzle ORM
 
-## 🔐 Validation & Config
-- Zod (schema validation)
-- dotenv (environment variables)
+## Environment Setup
 
-## 🌍 API & Networking
-- Axios (HTTP client)
-- CORS
+1. Copy `server/.env.example` to `server/.env`.
+2. Copy `client/.env.example` to `client/.env`.
+3. Set a real `JWT_SECRET` before running the backend outside local development.
+4. Update `DATABASE_URL`, `CLIENT_URL`, and `ALLOWED_ORIGINS` for your environment.
 
-## ☁️ Services
-- Supabase (optional backend services)
+## Install
 
-## 🛠️ Dev Tools
-- Drizzle Kit (DB migrations & studio)
-- Prettier (code formatting)
-
-
----------------------------------------------
-#wakaTime Dashboard -->
-<img width="1906" height="865" alt="image" src="https://github.com/user-attachments/assets/b3f0b3e3-25b9-4b51-9328-62add24bf1d4" />
-
-
------------------------------------------------
-
-# 🎨 Frontend Tech Stack
-
-## ⚛️ Core Framework
-- React 19
-- TypeScript
-- Vite
-
-## 🎨 UI System & Design
-- Tailwind CSS
-- shadcn/ui (component system)
-- Radix UI (accessible primitives)
-- Geist Font
-- Font Awesome Icons
-- Lucide React (icons)
-
-## 🧠 State, Styling & Utilities
-- clsx (conditional classNames)
-- tailwind-merge (class merging)
-- class-variance-authority (variant-based styling)
-
-## 🌐 Routing & Networking
-- React Router DOM
-- Axios (API calls)
-
-## 🌙 UX Enhancements
-
-- Sonner (toast notifications)
-
-## 🧩 Advanced UI & Visualization
-- React Flow / XYFlow (node-based UI / graphs)
-
-
-## ✍️ Drawing & Interaction
-- Tegaki (canvas-based drawing / handwriting input)
-
-### 🤖 AI
-- Ollama (local LLM)
-- Gemma / LLaMA models
-- 
-
-## ⚙️ Build & Dev Tools
-- Vite Plugin React
-- ESLint + TypeScript ESLint
-- Prettier
-- PostCSS + Autoprefixer
-
----
-## 📦 Installation
-
-### 1. Clone Repo
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
----
-
+cd client
+npm install
+cd ../server
+bun install
 ```
 
+## Run Locally
 
+Frontend:
 
+```bash
+cd client
+npm run dev
+```
 
+Backend:
+
+```bash
+cd server
+bun run dev
+```
+
+## Database
+
+Run migrations after updating the schema:
+
+```bash
+cd server
+bun run db:migrate
+```
+
+## Quality Checks
+
+Frontend:
+
+```bash
+cd client
+npm run lint
+npm run build
+```
+
+Backend:
+
+```bash
+cd server
+bun run build
+```
+
+## Wakatime Stats
+<img width="1906" height="865" alt="image" src="https://github.com/user-attachments/assets/b3f0b3e3-25b9-4b51-9328-62add24bf1d4" />
+
+## Demo
 https://github.com/user-attachments/assets/b0d158e6-84a4-4de9-ab23-f353571f051b
-
-
-

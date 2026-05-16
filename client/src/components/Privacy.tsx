@@ -1,11 +1,5 @@
-
-
 const PrivacyComponent = () => {
-
-
-
-
-    const privacyText = `Privacy Policy
+  const privacyText = `Privacy Policy
 
 Last Updated: April 17, 2026
 
@@ -44,55 +38,19 @@ Policy may be updated periodically.
 8. Contact
 Email: privacy@example.com`;
 
+  return (
+    <div className="mx-auto my-10 max-w-4xl px-4">
+      <section className="border-4 border-black bg-yellow-300 p-6 shadow-[8px_8px_0px_black]">
+        <h1 className="mb-4 border-b-4 border-black pb-2 text-3xl font-black uppercase tracking-tight text-black">
+          Privacy Policy
+        </h1>
 
-
-
-
-
-
-
-    return (
-        <div
-
-            style={{
-                maxWidth: "800px",
-                margin: "40px auto",
-                padding: "24px",
-                background: "#fff200",
-                border: "3px solid black",
-                boxShadow: "8px 8px 0px black",
-                fontFamily: "Arial, sans-serif",
-                color: "black",
-            }}
-        >
-
-            <h1
-                style={{
-                    fontSize: "28px",
-                    fontWeight: "900",
-                    marginBottom: "16px",
-                    borderBottom: "3px solid black",
-                    paddingBottom: "8px",
-                }}
-            >
-                PRIVACY POLICY
-            </h1>
-
-
-            <div
-                style={{
-                    whiteSpace: "pre-wrap",
-                    fontSize: "16px",
-                    lineHeight: "24px",
-                }}
-            >
-                {privacyText}
-            </div>
-
-
-
-        </div>
-    );
+        <pre className="whitespace-pre-wrap font-sans text-base leading-7 text-black">
+          {privacyText}
+        </pre>
+      </section>
+    </div>
+  );
 };
 
 export default PrivacyComponent;

@@ -1,29 +1,15 @@
+import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { Habits } from "../db/schema";
 
-export const get_data = async () => {
-  try {
-    const get_habit = await db
-      .select({
-        name: Habits.name,
-        desc: Habits.description,
-        id: Habits.id,
-      })
-      .from(Habits);
-
-    if (!get_habit) {
-      throw new Error("No data returned from database");
-    }
-
-    return get_habit;
-  } catch (error: any) {
-    console.error("!! DB Error in get_data:", {
-      message: error?.message,
-    });
-
-    throw {
-      status: 500,
-      message: "Failed to fetch habits",
-    };
-  }
+export const get_data = async (userId: string) => {
+  return db
+    .select({
+      id: Habits.id,
+      name: Habits.name,
+      description: Habits.description,
+      createdAt: Habits.createdAt,
+    })
+    .from(Habits)
+    .where(eq(Habits.userId, userId));
 };

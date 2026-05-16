@@ -1,21 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter } from "react-router-dom";
-import { RouterProvider } from "react-router-dom";
-import "./index.css";
-import Layout from "./components/Layout";
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
-import Homepage from "./pages/Homepage";
-import AllHabitsPage from "./pages/AllHabitspage";
-
-import PrivacyASCII from "./components/Privacy";
+import { AuthProvider } from "./auth/auth-context";
 import Login from "./auth/login";
 import Register from "./auth/register";
-
-
-
-
+import { ProtectedRoute } from "./auth/protected-route";
+import Layout from "./components/Layout";
+import PrivacyASCII from "./components/Privacy";
+import "./index.css";
+import AllHabitsPage from "./pages/AllHabitspage";
+import Homepage from "./pages/Homepage";
 
 const router = createBrowserRouter([
   {
@@ -24,47 +19,41 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home",
-        element:
-
-
-          <Homepage />
-
-
-        ,
+        element: (
+          <ProtectedRoute>
+            <Homepage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/habits",
-        element: <AllHabitsPage />
-      },
-
-      {
-        path: '/privacy',
-        element: <PrivacyASCII />
-      }
-
-
-      , {
-
-
-        path: '/login',
-        element: <Login />
+        element: (
+          <ProtectedRoute>
+            <AllHabitsPage />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: '/register',
-        element: <Register />
-
-
-      }
+        path: "/privacy",
+        element: <PrivacyASCII />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-
-    <RouterProvider router={router} />
-    <Toaster position="top-center" />
-
-  </StrictMode>
-
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+    <Toaster position="bottom-right" />
+  </StrictMode>,
 );

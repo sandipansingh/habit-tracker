@@ -1,43 +1,44 @@
-import  { useEffect, useState } from 'react';
-import { api } from '../api/axios-config';
-import { toast } from 'sonner';
 import { Spinner } from "@/components/ui/spinner";
-import { Habits_data } from '@/types/types';
-
+import type { Habit } from "@/types/types";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { deleteHabit, fetchHabits } from "@/api/habits";
 
 function Habits() {
-  const [data, setData] = useState<Habits_data[]>([]);
+  const [data, setData] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<number[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadHabits = async () => {
       try {
         setLoading(true);
-        const res = await api.get('/get');
-        setData(res.data.data ?? []);
-      } catch (err) {
-        console.error('❌ Fetch error:', err);
-        toast.error('Failed to load habits');
+        setError("");
+        const habits = await fetchHabits();
+        setData(habits);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load habits");
+        toast.error("Failed to load habits");
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    void loadHabits();
   }, []);
 
-  async function handleDel(id: number) {
+  async function handleDelete(id: number) {
     const previousData = data;
     setData((prev) => prev.filter((habit) => habit.id !== id));
     setDeletingIds((prev) => [...prev, id]);
 
     try {
-      await api.delete(`/del/${id}`);
-      toast.success('Habit deleted successfully');
-    } catch (err) {
-      console.error('Delete failed:', err);
+      await deleteHabit(id);
+      toast.success("Habit deleted successfully");
+    } catch {
       setData(previousData);
-      toast.error('Failed to delete habit. Please try again.');
+      toast.error("Failed to delete habit. Please try again.");
     } finally {
       setDeletingIds((prev) => prev.filter((deletingId) => deletingId !== id));
     }
@@ -45,73 +46,64 @@ function Habits() {
 
   if (loading) {
     return (
-      <div className="p-6 flex justify-center items-center min-h-200px">
+      <div className="flex min-h-[200px] items-center justify-center p-6">
         <Spinner className="h-8 w-8 text-blue-500" />
         <span className="ml-3 text-gray-600">Loading your habits...</span>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl p-6">
+        <div className="rounded-3xl border-4 border-red-600 bg-red-50 p-6 text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-8 rotate-1deg  inline-block border-b-4 border-black">
+    <div className="mx-auto max-w-7xl p-4 sm:p-6">
+      <h1 className="mb-8 inline-block border-b-4 border-black text-3xl font-black uppercase tracking-tighter sm:text-4xl">
         My Habits
       </h1>
 
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+      <div className="grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {data.length > 0 ? (
           data.map((habit, index) => (
             <div
               key={habit.id}
-              className={`
-                bg-white border-4 border-black 
-                shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
-                hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                hover:translate-x-1 hover:translate-y-1
-                transition-all duration-150
-                flex flex-col p-5
-                aspect-square
-                ${index % 2 === 0 ? 'rotate-[-0.5deg]' : 'rotate-[0.5deg]'}
-              `}
+              className={`flex aspect-square flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                index % 2 === 0 ? "rotate-[-0.5deg]" : "rotate-[0.5deg]"
+              }`}
             >
               <div className="flex-1">
-                <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight break-words">
+                <h3 className="break-words text-xl font-black uppercase tracking-tight sm:text-2xl">
                   {habit.name}
                 </h3>
-                {habit.desc && (
-                  <p className="mt-2 font-mono text-sm text-black/70 line-clamp-3">
-                    {habit.desc}
+                {habit.description ? (
+                  <p className="mt-2 line-clamp-3 font-mono text-sm text-black/70">
+                    {habit.description}
                   </p>
-                )}
+                ) : null}
               </div>
 
               <div className="mt-4 flex justify-end">
                 <button
-                  className="
-    px-4 py-2 border-4 border-black 
-    shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-    active:translate-x-1 active:translate-y-1 active:shadow-none
-    transition-all duration-100
-    font-bold uppercase text-sm
-    bg-pink-500 text-white
-    hover:bg-pink-600
-    disabled:opacity-50 disabled:translate-x-0 disabled:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-  "
-                  onClick={() => handleDel(habit.id)}
+                  className="border-4 border-black bg-pink-500 px-4 py-2 text-sm font-bold uppercase text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-100 hover:bg-pink-600 active:translate-x-1 active:translate-y-1 active:shadow-none disabled:translate-x-0 disabled:opacity-50 disabled:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  onClick={() => void handleDelete(habit.id)}
                   disabled={deletingIds.includes(habit.id)}
                   aria-label={`Delete habit ${habit.name}`}
                 >
-                  {deletingIds.includes(habit.id) ? '⌛' : '✖'}
+                  {deletingIds.includes(habit.id) ? "⌛" : "✖"}
                 </button>
               </div>
             </div>
           ))
         ) : (
-          <div className="col-span-full flex justify-center items-center p-12 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xl font-mono font-bold text-black/70">
-              No habits yet. Create your first one!
-            </p>
+          <div className="col-span-full flex items-center justify-center border-4 border-black bg-white p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <p className="text-xl font-bold text-black/70">No habits yet. Create your first one.</p>
           </div>
         )}
       </div>

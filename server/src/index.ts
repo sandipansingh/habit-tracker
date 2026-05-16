@@ -1,84 +1,52 @@
+import cors, { type CorsOptions } from "cors";
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { router } from "./routes";
-import { registerUser } from './auth/register.service.js';
-import { loginUser } from "./auth/login.service.js";
-
-dotenv.config();
+import helmet from "helmet";
+import { authRouter } from "./routes/auth.routes.js";
+import { router as habitRouter } from "./routes/index.js";
+import { config } from "./config/index.js";
+import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 
 export const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "https://habiatio.netlify.app", 
-      "https://69e2ad6ac249e613a9455f11--habiatio.netlify.app",
-      "http://127.0.0.1:52804",
-      "http://localhost:3000",
-      "http://localhost:5173"
-    ],
-    credentials: true
-  })
-);
-
-app.use(express.json());
-
-app.use(express.urlencoded({ extended: true }));
-
-
-
-app.post("/api/habits/auth/register", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+const corsOptions: CorsOptions = {
+  credentials: true,
+  origin(origin, callback) {
+    if (!origin) {
+      callback(null, true);
+      return;
     }
 
-    console.log("Registration attempt for:", email);
-    const user = await registerUser(email, password);
-    console.log("Registration successful for:", email);
+    if (config.allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
 
-    res.json({ message: "User registered successfully", user: { id: user.id, email: user.email } });
-  } catch (err: any) {
-    console.error("Registration error:", err);
-    res.status(500).json({ error: err.message || "Registration failed" });
-  }
+    callback(new Error("Origin is not allowed by CORS"));
+  },
+};
+
+app.disable("x-powered-by");
+app.set("trust proxy", config.trustProxy);
+
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(express.json({ limit: "100kb" }));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
+
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+    environment: config.nodeEnv,
+  });
 });
 
+app.use("/api/habits/auth", authRouter);
+app.use("/api/habits", habitRouter);
 
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-
-
-
-app.post("/api/habits/auth/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const data = await loginUser(email, password);
-
-    res.json(data);
-  } catch (err: any) {
-    res.status(401).json({ error: err.message });
-  }
-});
-
-
-app.use("/api/habits", router);
-
-
-
-
-
-
-
-
-app.get("/", (req, res) => {
-  console.log("Server is  okay");
-  res.send("Server is ok !");
-});
-
-app.listen(process.env.PORT, () => {
-  console.log("Server is running on port ", process.env.PORT);
+app.listen(config.port, () => {
+  console.info(`Server is running on port ${config.port}`);
 });

@@ -1,25 +1,19 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { Habits } from "../db/schema";
+import { AppError } from "../utils/app-error.js";
 
-export const deleting_habitById = async (req_id: number): Promise<boolean> => {
-  if (!req_id || req_id <= 0) {
-    throw new Error("Invalid habit ID");
-  }
-
-  const existing = await db.select().from(Habits).where(eq(Habits.id, req_id));
-
-  if (existing.length === 0) {
-    throw new Error("Habit not found");
-  }
-
+export const deleting_habitById = async (
+  userId: string,
+  habitId: number,
+): Promise<boolean> => {
   const deleted = await db
     .delete(Habits)
-    .where(eq(Habits.id, req_id))
+    .where(and(eq(Habits.id, habitId), eq(Habits.userId, userId)))
     .returning();
 
   if (deleted.length === 0) {
-    throw new Error("Failed to delete habit");
+    throw new AppError("Habit not found", 404);
   }
 
   return true;
